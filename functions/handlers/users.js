@@ -100,13 +100,13 @@ exports.login = (req, res) => {
     })
 }
 
-//Update User
-exports.addUserDetails = (req, res) => {
+//Update User TBD!!!!
+exports.updateUser = (req, res) => {
   let userDetails = reduceUserDetails(req.body)
   db.doc(`/users/${req.user.handle}`)
     .update(userDetails)
     .then(() => {
-      return res.json({ message: 'Details added successfully.' })
+      return res.json({ message: 'User updated successfully.' })
     })
     .catch(err => {
       console.error(err)
@@ -123,7 +123,7 @@ exports.getUserDetails = (req, res) => {
       if (doc.exists) {
         userData.user = doc.data()
         return db
-          .collection('screams')
+          .collection('customers')
           .where('userHandle', '==', req.params.handle)
           .orderBy('createdAt', 'desc')
           .get()
@@ -162,10 +162,11 @@ exports.getAuthenticatedUser = (req, res) => {
     .then(doc => {
       if (doc.exists) {
         userData.credentials = doc.data()
-        return db
-          .collection('likes')
-          .where('userHandle', '==', req.user.handle)
-          .get()
+        // return db
+        //   .collection('likes')
+        //   .where('userHandle', '==', req.user.handle)
+        //   .get()
+        return res.json(userData)
       }
     })
     // .then(data => {

@@ -1,4 +1,20 @@
-const { db } = require('../utilities/admin')
+const { admin, db } = require('../utilities/admin')
+
+// const firebase = require('firebase')
+require('dotenv').config()
+
+const config = {
+  apiKey: process.env.apiKey,
+  authDomain: process.env.authDomain,
+  databaseURL: process.env.databaseURL,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId,
+  measurementId: process.env.measurementId
+}
+
+// firebase.initializeApp(config)
 
 exports.getAllCustomers = (req, res) => {
   db.collection('customers')
@@ -30,12 +46,15 @@ exports.createCustomer = (req, res) => {
   // if (req.body.body.trim() === '') {
   //   return res.status(400).json({ body: 'Body must not be empty.' })
   // }
-
+  // console.log(req.body.first_name)
+  // console.log(req.body.email)
+  // console.log(req.user.handle)
   const newCustomer = {
-    first_name: req.body.first_name,
-    last_name: req.body.last_name,
+    first_name: 'tbd', //req.body.first_name,
+    last_name: 'tbd', //req.body.last_name,
     email: req.body.email,
     createdAt: new Date().toISOString(),
+    updatedAt: '',
     userHandle: req.user.handle,
     customerImage_1: 'tbd',
     customerImage_2: 'tbd'
@@ -71,11 +90,12 @@ exports.getCustomer = (req, res) => {
       }
       customerData = doc.data()
       customerData.customerId = doc.id
-      return db
-        .collection('customers')
-        .orderBy('createdAt', 'desc')
-        .where('customerId', '==', req.params.customerId)
-        .get()
+      // return db
+      //   .collection('customers')
+      //   .orderBy('createdAt', 'desc')
+      //   .where('customerId', '==', req.params.customerId)
+      //   .get()
+      return res.json(customerData)
     })
     // .then(data => {
     //   customerData.comments = []
@@ -90,127 +110,29 @@ exports.getCustomer = (req, res) => {
     })
 }
 
-// //Comment on a customer
-// exports.commentOncustomer = (req, res) => {
-//   if (req.body.body.trim() === '') return res.status(400).json({ comment: 'Must not be empty.' })
-//   const newComment = {
-//     body: req.body.body,
-//     createdAt: new Date().toISOString(),
-//     customerId: req.params.customerId,
-//     userHandle: req.user.handle,
-//     userImage: req.user.imageUrl
-//   }
-//   db.doc(`/customers/${req.params.customerId}`)
-//     .get()
-//     .then(doc => {
-//       if (!doc.exists) {
-//         return res.status(404).json({ error: 'customer not found.' })
-//       }
-//       return doc.ref.update({ commentCount: doc.data().commentCount + 1 })
-//     })
-//     .then(() => {
-//       return db.collection('comments').add(newComment)
-//     })
-//     .then(() => {
-//       res.json(newComment)
-//     })
-//     .catch(err => {
-//       console.error(err)
-//       res.status(500).json({ error: err.code })
-//     })
-// }
+exports.updateCustomer = (req, res) => {
+  if (req.body.first_name.trim() === '') {
+    return res.status(400).json({ body: 'First name must not be empty.' })
+  }
+  const updateData = {
+    first_name: req.body.first_name,
+    last_name: req.body.last_name,
+    email: 'needs to be updated here', //has to be pre-inserted in input field
+    updatedAt: new Date().toISOString(),
+    customerImage_1: 'tbd',
+    customerImage_2: 'tbd'
+  }
 
-// //Like customer
-// exports.likecustomer = (req, res) => {
-//   const likeDocument = db
-//     .collection('likes')
-//     .where('userHandle', '==', req.user.handle)
-//     .where('customerId', '==', req.params.customerId)
-//     .limit(1)
-
-//   const customerDocument = db.doc(`/customers/${req.params.customerId}`)
-
-//   let customerData
-//   customerDocument
-//     .get()
-//     .then(doc => {
-//       if (doc.exists) {
-//         customerData = doc.data()
-//         customerData.customerId = doc.id
-//         return likeDocument.get()
-//       } else {
-//         return res.status(404).json({ error: 'customer not found' })
-//       }
-//     })
-//     .then(data => {
-//       if (data.empty) {
-//         return db
-//           .collection('likes')
-//           .add({
-//             customerId: req.params.customerId,
-//             userHandle: req.user.handle
-//           })
-//           .then(() => {
-//             customerData.likeCount++
-//             return customerDocument.update({ likeCount: customerData.likeCount })
-//           })
-//           .then(() => {
-//             return res.json(customerData)
-//           })
-//       } else {
-//         return res.status(400).json({ error: 'customer already liked' })
-//       }
-//     })
-//     .catch(err => {
-//       console.error(err)
-//       res.status(500).json({ error: err.code })
-//     })
-// }
-
-// //Unlike customer
-// exports.unlikecustomer = (req, res) => {
-//   const likeDocument = db
-//     .collection('likes')
-//     .where('userHandle', '==', req.user.handle)
-//     .where('customerId', '==', req.params.customerId)
-//     .limit(1)
-
-//   const customerDocument = db.doc(`/customers/${req.params.customerId}`)
-
-//   let customerData
-
-//   customerDocument
-//     .get()
-//     .then(doc => {
-//       if (doc.exists) {
-//         customerData = doc.data()
-//         customerData.customerId = doc.id
-//         return likeDocument.get()
-//       } else {
-//         return res.status(404).json({ error: 'customer not found' })
-//       }
-//     })
-//     .then(data => {
-//       if (data.empty) {
-//         return res.status(400).json({ error: 'customer not liked' })
-//       } else {
-//         return db
-//           .doc(`/likes/${data.docs[0].id}`)
-//           .delete()
-//           .then(() => {
-//             customerData.likeCount--
-//             return customerDocument.update({ likeCount: customerData.likeCount })
-//           })
-//           .then(() => {
-//             res.json(customerData)
-//           })
-//       }
-//     })
-//     .catch(err => {
-//       console.error(err)
-//       res.status(500).json({ error: err.code })
-//     })
-// }
+  db.doc(`/customers/${req.params.customerId}`)
+    .update(updateData)
+    .then(() => {
+      return res.json({ message: 'Customer updated successfully.' })
+    })
+    .catch(err => {
+      console.error(err)
+      return res.status(500).json({ error: err.code })
+    })
+}
 
 //Delete customer
 exports.deleteCustomer = (req, res) => {
@@ -259,10 +181,9 @@ exports.uploadImage_1 = (req, res) => {
     file.pipe(fs.createWriteStream(filepath))
   })
   busboy.on('finish', () => {
-    console.log('Busboy')
     admin
       .storage()
-      .bucket()
+      .bucket('ocb-store-management.appspot.com')
       .upload(imageToBeUploaded.filepath, {
         resumable: false,
         metadata: {
@@ -272,9 +193,8 @@ exports.uploadImage_1 = (req, res) => {
         }
       })
       .then(() => {
-        console.log('Url')
         const customerImage_1 = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`
-        return db.doc(`/customers/${req.customer.customerId}`).update({ customerImage_1 })
+        return db.doc(`/customers/${req.params.customerId}`).update({ customerImage_1 })
         // To be checked if req.customer.customerId das richtige ist... siehe Database!
       })
       .then(() => {
@@ -310,10 +230,9 @@ exports.uploadImage_2 = (req, res) => {
     file.pipe(fs.createWriteStream(filepath))
   })
   busboy.on('finish', () => {
-    console.log('Busboy')
     admin
       .storage()
-      .bucket()
+      .bucket('ocb-store-management.appspot.com')
       .upload(imageToBeUploaded.filepath, {
         resumable: false,
         metadata: {
@@ -325,7 +244,7 @@ exports.uploadImage_2 = (req, res) => {
       .then(() => {
         console.log('Url')
         const customerImage_2 = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`
-        return db.doc(`/customers/${req.customer.customerId}`).update({ customerImage_2 })
+        return db.doc(`/customers/${req.params.customerId}`).update({ customerImage_2 })
         // To be checked if req.customer.customerId das richtige ist... siehe Database!
       })
       .then(() => {
