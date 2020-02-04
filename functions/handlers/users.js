@@ -25,7 +25,8 @@ exports.signup = (req, res) => {
     confirmPassword: req.body.confirmPassword,
     handle: req.body.handle,
     store_location: req.body.store_location,
-    role: req.body.role
+    role: req.body.role,
+    updatedAt: ''
   }
 
   const { valid, errors } = validateSignupData(newUser)
@@ -100,11 +101,23 @@ exports.login = (req, res) => {
     })
 }
 
-//Update User TBD!!!!
+//Update User
 exports.updateUser = (req, res) => {
-  let userDetails = reduceUserDetails(req.body)
+  // let userDetails = reduceUserDetails(req.body)
+  // if (req.body.first_name.trim() === '') {
+  //   return res.status(400).json({ body: 'First name must not be empty.' })
+  // }
+
+  const updateData = {
+    handle: req.body.handle,
+    email: req.body.email,
+    store_location: req.body.store_location,
+    role: req.body.role,
+    updatedAt: new Date().toISOString()
+  }
+
   db.doc(`/users/${req.user.handle}`)
-    .update(userDetails)
+    .update(updateData)
     .then(() => {
       return res.json({ message: 'User updated successfully.' })
     })

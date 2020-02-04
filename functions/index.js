@@ -30,11 +30,12 @@ app.delete('/customer/:customerId', FBauth, deleteCustomer) //OK
 //User routes
 app.post('/signup', signup) //OK
 app.post('/login', login) //OK
-app.post('/user', FBauth, updateUser) //TBD!!!!
+app.post('/user', FBauth, updateUser) //OK, all fields to be pre-fetched and pre-filled on update!
 app.get('/user', FBauth, getAuthenticatedUser) //OK
 app.get('/user/:handle', getUserDetails) //OK
 
 exports.api = functions.region('europe-west1').https.onRequest(app)
+//eigentlich .api
 
 // exports.createNotificationOnLike = functions
 //   .region('europe-west1')

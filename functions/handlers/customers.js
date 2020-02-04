@@ -110,6 +110,7 @@ exports.getCustomer = (req, res) => {
     })
 }
 
+//Update customer
 exports.updateCustomer = (req, res) => {
   if (req.body.first_name.trim() === '') {
     return res.status(400).json({ body: 'First name must not be empty.' })
