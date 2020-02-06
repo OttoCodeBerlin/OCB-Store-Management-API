@@ -2,6 +2,8 @@ const functions = require('firebase-functions')
 
 const app = require('express')()
 
+const cors = require('cors')
+
 const FBauth = require('./utilities/fbauth')
 
 const { db } = require('./utilities/admin')
@@ -17,6 +19,8 @@ const {
 } = require('./handlers/customers')
 
 const { signup, login, updateUser, getAuthenticatedUser, getUserDetails } = require('./handlers/users')
+
+app.use(cors())
 
 //Customer routes
 app.get('/customers', getAllCustomers) //OK
