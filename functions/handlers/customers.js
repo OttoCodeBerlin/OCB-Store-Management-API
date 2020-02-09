@@ -1,7 +1,25 @@
 const { admin, db } = require('../utilities/admin')
+const nodemailer = require('nodemailer')
+const fs = require('fs')
 
 // const firebase = require('firebase')
 require('dotenv').config()
+
+const email_part1 = fs.readFileSync(__dirname + '/emailSnippets/email_part1.txt').toString()
+const email_part2 = fs.readFileSync(__dirname + '/emailSnippets/email_part2.txt').toString()
+const resend_email_part1 = fs.readFileSync(__dirname + '/emailSnippets/resend_email_part1.txt').toString()
+const resend_email_part2 = fs.readFileSync(__dirname + '/emailSnippets/resend_email_part2.txt').toString()
+
+let transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+})
 
 const config = {
   apiKey: process.env.apiKey,
@@ -46,32 +64,67 @@ exports.createCustomer = (req, res) => {
   // if (req.body.body.trim() === '') {
   //   return res.status(400).json({ body: 'Body must not be empty.' })
   // }
-  // console.log(req.body.first_name)
-  // console.log(req.body.email)
-  // console.log(req.user.handle)
   const newCustomer = {
-    first_name: 'tbd', //req.body.first_name,
-    last_name: 'tbd', //req.body.last_name,
+    first_name: '', //req.body.first_name,
+    last_name: '', //req.body.last_name,
     email: req.body.email,
     createdAt: new Date().toISOString(),
     updatedAt: '',
     userHandle: req.user.handle,
-    customerImage_1: 'tbd',
-    customerImage_2: 'tbd'
-
-    // body: req.body.body,
-    // userHandle: req.user.handle,
-    // userImage: req.user.imageUrl,
-    // createdAt: new Date().toISOString(),
-    // likeCount: 0,
-    // commentCount: 0
+    customerImage_1: '',
+    customerImage_2: ''
   }
   db.collection('customers')
     .add(newCustomer)
     .then(doc => {
-      const responseCustomer = newCustomer
-      responseCustomer.customerId = doc.id
-      res.json(responseCustomer)
+      transporter.sendMail({
+        from: '"Sustainable. Fashion. O." <mailer@ocbcms.com>',
+        to: req.body.email,
+        subject: 'Sustainable. Fashion. O. Welcome to your store - Please complete your profile',
+        html: email_part1 + 'https://ocb-store-management.firebaseapp.com/confirm/' + doc.id + email_part2
+      })
+      res.status(200).json({ message: 'Email sent successfully to ' + req.body.email + '.' })
+    })
+    .catch(err => {
+      res.status(500).json({ error: 'Something went wrong' })
+      console.error(err)
+    })
+}
+
+exports.confirmCustomer = (req, res) => {
+  const updateData = {
+    updatedAt: new Date().toISOString(),
+    customerImage_1: '',
+    customerImage_2: ''
+  }
+  let custId = req.params.customerId
+  db.doc(`/customers/${custId}`)
+    .update(updateData)
+    // db.collection('customers')
+    //   .add(newCustomer)
+    .then(doc => {
+      db.doc(`/customers/${custId}`)
+        .get()
+        .then(doc => {
+          if (!doc.exists) {
+            return res.status(404).json({ error: 'Customer not found' })
+          }
+          customerData = doc.data()
+          transporter.sendMail({
+            from: '"Sustainable. Fashion. O." <mailer@ocbcms.com>',
+            to: customerData.email,
+            subject: 'Sustainable. Fashion. O. Welcome to your store - Please complete your profile',
+            html:
+              resend_email_part1 + 'https://ocb-store-management.firebaseapp.com/confirm/' + custId + resend_email_part2
+          })
+          res
+            .status(200)
+            .json({ message: 'Customer confirmation email sent successfully to ' + customerData.email + '.' })
+            .catch(err => {
+              res.status(500).json({ error: 'Something went wrong' })
+              console.error(err)
+            })
+        })
     })
     .catch(err => {
       res.status(500).json({ error: 'Something went wrong' })
@@ -118,10 +171,10 @@ exports.updateCustomer = (req, res) => {
   const updateData = {
     first_name: req.body.first_name,
     last_name: req.body.last_name,
-    email: 'needs to be updated here', //has to be pre-inserted in input field
+    email: req.body.email,
     updatedAt: new Date().toISOString(),
-    customerImage_1: 'tbd',
-    customerImage_2: 'tbd'
+    customerImage_1: '',
+    customerImage_2: ''
   }
 
   db.doc(`/customers/${req.params.customerId}`)
@@ -196,7 +249,6 @@ exports.uploadImage_1 = (req, res) => {
       .then(() => {
         const customerImage_1 = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`
         return db.doc(`/customers/${req.params.customerId}`).update({ customerImage_1 })
-        // To be checked if req.customer.customerId das richtige ist... siehe Database!
       })
       .then(() => {
         return res.json({ message: 'Image uploaded successfully' })
@@ -246,7 +298,6 @@ exports.uploadImage_2 = (req, res) => {
         console.log('Url')
         const customerImage_2 = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`
         return db.doc(`/customers/${req.params.customerId}`).update({ customerImage_2 })
-        // To be checked if req.customer.customerId das richtige ist... siehe Database!
       })
       .then(() => {
         return res.json({ message: 'Image uploaded successfully' })
