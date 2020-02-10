@@ -83,6 +83,8 @@ exports.createCustomer = (req, res) => {
         subject: 'Sustainable. Fashion. O. Welcome to your store - Please complete your profile',
         html: email_part1 + 'https://ocb-store-management.firebaseapp.com/confirm/' + doc.id + email_part2
       })
+    })
+    .then(doc => {
       res.status(200).json({ message: 'Email sent successfully to ' + req.body.email + '.' })
     })
     .catch(err => {
@@ -117,14 +119,16 @@ exports.confirmCustomer = (req, res) => {
             html:
               resend_email_part1 + 'https://ocb-store-management.firebaseapp.com/confirm/' + custId + resend_email_part2
           })
+        })
+        .then(doc => {
           res
             .status(200)
             .json({ message: 'Customer confirmation email sent successfully to ' + customerData.email + '.' })
-            .catch(err => {
-              res.status(500).json({ error: 'Something went wrong' })
-              console.error(err)
-            })
         })
+      // .catch(err => {
+      //   res.status(500).json({ error: 'Something went wrong' })
+      //   console.error(err)
+      // })
     })
     .catch(err => {
       res.status(500).json({ error: 'Something went wrong' })
