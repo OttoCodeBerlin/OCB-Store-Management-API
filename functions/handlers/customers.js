@@ -200,12 +200,15 @@ exports.deleteCustomer = (req, res) => {
     .then(doc => {
       if (!doc.exists) {
         return res.status(404).json({ error: 'Customer not found' })
-      }
-      if (doc.data().userHandle !== req.user.handle) {
-        return res.status(403).json({ error: 'Unauthorized' })
       } else {
         return document.delete()
       }
+
+      // if (doc.data().userHandle !== req.user.handle) {
+      //   return res.status(403).json({ error: 'Unauthorized' })
+      // } else {
+      //   return document.delete()
+      // }
     })
     .then(() => {
       res.json({ message: 'Customer deleted successfully' })
