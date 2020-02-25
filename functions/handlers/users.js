@@ -155,6 +155,7 @@ exports.getUserDetails = (req, res) => {
           userHandle: doc.data().userHandle,
           customerImage_1: doc.data().customerImage_1,
           customerImage_2: doc.data().customerImage_2,
+          updatedAt: doc.data().updatedAt,
           customerId: doc.id
         })
       })
@@ -214,72 +215,3 @@ exports.getAuthenticatedUser = (req, res) => {
       return res.status(500).json({ error: err.code })
     })
 }
-
-// //Upload Image
-// exports.uploadImage = (req, res) => {
-//   const BusBoy = require('busboy')
-//   const path = require('path')
-//   const os = require('os')
-//   const fs = require('fs')
-
-//   const busboy = new BusBoy({ headers: req.headers })
-
-//   let imageFileName
-//   let imageToBeUploaded = {}
-
-//   busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-//     if (mimetype !== 'image/jpeg' && mimetype !== 'image/jpg' && mimetype !== 'image/png') {
-//       return res.status(400).json({ error: 'Wrong file type submitted' })
-//     }
-//     const imageExtension = filename.split('.')[filename.split('.').length - 1]
-//     imageFileName = `${Math.round(Math.random() * 100000000000)}.${imageExtension}`
-//     const filepath = path.join(os.tmpdir(), imageFileName)
-//     imageToBeUploaded = { filepath, mimetype }
-//     file.pipe(fs.createWriteStream(filepath))
-//   })
-//   busboy.on('finish', () => {
-//     console.log('Busboy')
-//     admin
-//       .storage()
-//       .bucket()
-//       .upload(imageToBeUploaded.filepath, {
-//         resumable: false,
-//         metadata: {
-//           metadata: {
-//             contentType: imageToBeUploaded.mimetype
-//           }
-//         }
-//       })
-//       .then(() => {
-//         console.log('Url')
-//         const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`
-//         return db.doc(`/users/${req.user.handle}`).update({ imageUrl })
-//       })
-//       .then(() => {
-//         return res.json({ message: 'Image uploaded successfully' })
-//       })
-//       .catch(err => {
-//         console.error(err)
-//         return res.status(500).json({ error: err.code })
-//       })
-//   })
-//   busboy.end(req.rawBody)
-// }
-
-// //Mark notifications as read
-// exports.markNotificationsRead = (req, res) => {
-//   let batch = db.batch()
-//   req.body.forEach(notificationId => {
-//     const notification = db.doc(`/notifications/${notificationId}`)
-//     batch.update(notification, { read: true })
-//   })
-//   batch
-//     .commit()
-//     .then(() => {
-//       return res.json({ message: 'Notifications marked read' })
-//     })
-//     .catch(err => {
-//       console.error(err)
-//       return res.status(500).json({ error: err.code })
-//     })
-// }

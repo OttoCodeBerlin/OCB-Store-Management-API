@@ -48,6 +48,7 @@ exports.getAllCustomers = (req, res) => {
           email: doc.data().email,
           createdAt: doc.data().createdAt,
           userHandle: doc.data().userHandle,
+          updatedAt: doc.data().updatedAt,
           customerImage_1: doc.data().customerImage_1,
           customerImage_2: doc.data().customerImage_2
         })
@@ -203,12 +204,6 @@ exports.deleteCustomer = (req, res) => {
       } else {
         return document.delete()
       }
-
-      // if (doc.data().userHandle !== req.user.handle) {
-      //   return res.status(403).json({ error: 'Unauthorized' })
-      // } else {
-      //   return document.delete()
-      // }
     })
     .then(() => {
       res.json({ message: 'Customer deleted successfully' })
