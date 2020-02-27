@@ -101,6 +101,8 @@ exports.confirmCustomer = (req, res) => {
     customerImage_2: ''
   }
   let custId = req.params.customerId
+  console.log(custId)
+  console.log(updateData)
   db.doc(`/customers/${custId}`)
     .update(updateData)
     // db.collection('customers')
